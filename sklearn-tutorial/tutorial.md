@@ -221,7 +221,9 @@ print "Homogeneity: %0.3f" % metrics.homogeneity_score(twenty_train.target, km.l
 ```
 
 ---------------------------------------
-> **Exercise: ** Can you print out which cluster each document belongs to? Hint: use `km.predict(X_train_tfidf)` to get the cluster assignment of each document index, and `twenty_train.filenames` to get the filenames of the corresponding documents.
+
+> **Exercise:** Can you print out which cluster each document belongs to? Hint: use `km.predict(X_train_tfidf)` to get the cluster assignment of each document index, and `twenty_train.filenames` to get the filenames of the corresponding documents.
+
 ---------------------------------------
 
 
