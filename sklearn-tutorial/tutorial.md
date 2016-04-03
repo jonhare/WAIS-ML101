@@ -3,7 +3,7 @@
 # Machine Learning 101 - Tutorial
 
 ## Introduction and Acknowledgements
-This tutorial is largely based on the official ["Working With Text Data" scikit-learn tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html). A number of changes have been made to ensure that it fits the format required for the away-day session, and we've added additional bits that demonstrate how to cluster data. Through this tutorial you'll learn how to:
+This tutorial is largely based on the official ["Working With Text Data" scikit-learn tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html). A number of changes have been made to ensure that it fits the format required for the away-day session, and we've added additional bits that demonstrate how to cluster data with k-means. Through this tutorial you'll learn how to:
 
 * Load the a dataset of newsgroup posts
 * Extract feature vectors suitable for machine learning
@@ -37,15 +37,16 @@ We're going to start by loading the dataset into memory. `scikit-learn` contains
 
 ```python
 >>>
->>> categories = ['alt.atheism', 'soc.religion.christian', 'comp.graphics', 'sci.med']
+>>> categories = ['alt.atheism', 'soc.religion.christian', 'comp.graphics', 
+... 'sci.med']
 ```
 
 We can now load the list of files matching those categories using the [`sklearn.datasets.load_files`](http://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_files.html#sklearn.datasets.load_files) function as follows (change the path to match where your copy of the data is stored):
 
 ```python
-	>>> from sklearn.datasets import load_files
-	>>> twenty_train = load_files('/path/to/WAIS-ML101/sklearn-tutorial/data/twenty_newsgroups/train', 
-	... categories=categories, shuffle=True, random_state=42)
+>>> from sklearn.datasets import load_files
+>>> twenty_train = load_files('/path/to/data/twenty_newsgroups/train', 
+... categories=categories, shuffle=True, random_state=42, encoding='latin1')
 ```
 
 The returned dataset is a `scikit-learn` "bunch": a simple holder object with fields that can be both accessed as python `dict` keys or `object` attributes for convenience, for instance the `target_names` holds the list of the requested category names:
@@ -175,11 +176,54 @@ In the above code, we firstly use the `fit(..)` method to fit our estimator to t
 (2257, 35788)
 ```
 
+Rather than transforming the raw counts with the `TfidfTransformer`, it is alternatively possible to use the `TfidfVectorizer` to directly parse the dataset. The advantage of doing this is that it can automatically filter out less informative words on the basis of stop-words, document frequency, etc.:
+
+```python
+>>> from sklearn.feature_extraction.text import TfidfVectorizer
+>>> tfidf_vect = TfidfVectorizer(stop_words='english',max_df=0.5,min_df=2)
+>>> X_train_tfidf = tfidf_vect.fit_transform(twenty_train.data)
+>>> X_train_tfidf.shape
+(2257, 18189)
+```
+
+As you can see from the output, the number of features was reduced from 35788 to 18189 using this approach.
+
 ## Exploring clustering using scikit-learn
+
+Now we've extracted features from our training documents, we're in a position to experiment with clustering.
 
 ### Getting started with K-Means
 
-### Performing hierarchical clustering
+```python
+>>> from sklearn.cluster import KMeans
+>>> km = KMeans(4)
+>>> km.fit(X_train_tfidf)
+```
+
+```python
+>>> order_centroids = km.cluster_centers_.argsort()[:, ::-1]
+>>> terms = tfidf_vect.get_feature_names()
+>>> for i in range(4):
+...     print "Cluster %d:" % i,
+...     for ind in order_centroids[i, :10]:
+...         print ' %s' % terms[ind],
+...     print
+...
+Cluster 0:  com  graphics  university  posting  host  nntp  msg  article  thanks  know
+Cluster 1:  keith  caltech  livesey  sgi  wpd  solntze  schneider  jon  cco  morality
+Cluster 2:  god  jesus  people  bible  believe  christian  christians  think  say  don
+Cluster 3:  pitt  geb  banks  gordon  cs  cadre  dsl  shameful  n3jxp  surrender
+```
+
+```python
+from sklearn import metrics
+print "Homogeneity: %0.3f" % metrics.homogeneity_score(twenty_train.target, km.labels_)
+```
+
+---------------------------------------
+> **Exercise: ** Can you print out which cluster each document belongs to? Hint: use `km.predict(X_train_tfidf)` to get the cluster assignment of each document index, and `twenty_train.filenames` to get the filenames of the corresponding documents.
+---------------------------------------
+
 
 ## Building a predictive model
 
@@ -192,3 +236,5 @@ In the above code, we firstly use the `fit(..)` method to fit our estimator to t
 ### Other types of clustering
 
 ### More advanced classifiers
+
+
