@@ -19,9 +19,9 @@ To use this tutorial you'll use the Python language with the `scikit-learn` pack
 - `SciPy` (>= 0.9)
 - `scikit-learn` (>= 0.17.0)
 
-The easiest way to install all of these together is with [Anaconda](https://www.continuum.io/downloads) on Windows or Linux. On a Mac, open a terminal and run `pip install -U numpy scipy scikit-learn` (note: don't do this on Linux as there is not an official binary release & this will end up building a non-optimised version from source). You'll also need a programmer's text editor (e.g. [Sublime](http://www.sublimetext.com)).
+The easiest way to install all of these together is with [Anaconda](https://www.continuum.io/downloads) on Windows or Linux. On a Mac, open a terminal and run `pip install -U numpy scipy scikit-learn` (note: don't do this on Linux as there is not an official binary release & this will end up building a non-optimised version from source). 
 
-Finally, you'll need the data set we'll be using and skeleton solutions to the exercises. If you've borrowed a laptop from us, then you can find these on the desktop in the `WAIS-ML101/sklearn-tutorial` folder. If you're using your own laptop, then you can copy this off the memory sticks we've provided, or you can clone it from GitHub using:  ...
+Finally, you'll need the data set we'll be using and skeleton solutions to the exercises. If you've borrowed a laptop from us, then you can find these on the desktop in the `WAIS-ML101/sklearn-tutorial` folder. If you're using your own laptop, then you can copy this off the memory sticks we've provided, or you can clone it from GitHub using: `git clone https://github.com/jonhare/WAIS-ML101.git`
 
 ## A data set for experimentation
 
@@ -122,7 +122,7 @@ The most intuitive way to do so is the "bags of words" representation:
 
 The bags of words representation implies that `n_features` is the number of distinct words in the corpus: this number is typically larger that 100,000.
 
-If `n_samples == 10000`, storing `X` as a numpy array of type float32 would require 10000 x 100000 x 4 bytes = **4GB in RAM** which is barely manageable on today's computers.
+If `n_samples == 10000`, storing `X` as a numpy array of type float32 would require 10000 x 100000 x 4 bytes = **4GB in RAM** which is might not be manageable on the computer you're using today.
 
 Fortunately, **most values in X will be zeros** since for a given document less than a couple thousands of distinct words will be used. For this reason we say that bags of words are typically **high-dimensional sparse datasets**. We can save a lot of memory by only storing the non-zero parts of the feature vectors in memory.
 
