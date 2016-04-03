@@ -188,11 +188,15 @@ Rather than transforming the raw counts with the `TfidfTransformer`, it is alter
 
 As you can see from the output, the number of features was reduced from 35788 to 18189 using this approach.
 
-## Exploring clustering using scikit-learn
+---------------------------------------
 
-Now we've extracted features from our training documents, we're in a position to experiment with clustering.
+> **Exercise:** Explore different parameters for the `TfidfVectorizer` - take a look at the documentation [here](http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html) to see what else it can do
 
-### Getting started with K-Means
+---------------------------------------
+
+## Exploring K-Means clustering using scikit-learn
+
+Now we've extracted features from our training documents we're in a position to experiment with clustering. We'll use K-Means as its one of the most intuitive clustering methods, although it does have a few limitations.
 
 ```python
 >>> from sklearn.cluster import KMeans
@@ -223,6 +227,12 @@ print "Homogeneity: %0.3f" % metrics.homogeneity_score(twenty_train.target, km.l
 ---------------------------------------
 
 > **Exercise:** Can you print out which cluster each document belongs to? Hint: use `km.predict(X_train_tfidf)` to get the cluster assignment of each document index, and `twenty_train.filenames` to get the filenames of the corresponding documents.
+
+---------------------------------------
+
+---------------------------------------
+
+> **Exercise:** Explore what happens if you make the number of clusters larger. What do you notice? Do the clusters of posts to the mailing lists begin to make more intuitive sense?
 
 ---------------------------------------
 
