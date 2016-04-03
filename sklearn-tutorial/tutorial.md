@@ -140,7 +140,7 @@ Text preprocessing, tokenizing and filtering of stop-words are included in a hig
 (2257, 35788)
 ```
 
-CountVectorizer supports counts of N-grams of words or consecutive characters. Once fitted, the vectorizer has built a dictionary of feature indices:
+`CountVectorizer` also supports counts of N-grams of words or consecutive characters. N-grams are runs of consecutive characters or words, so for example in the case of word bi-grams, every consecutive pair of words would be a feature. Once fitted, the vectorizer has built a dictionary of feature indices:
 
 ```python
 >>> count_vect.vocabulary_.get(u'algorithm')
@@ -198,11 +198,15 @@ As you can see from the output, the number of features was reduced from 35788 to
 
 Now we've extracted features from our training documents we're in a position to experiment with clustering. We'll use K-Means as its one of the most intuitive clustering methods, although it does have a few limitations.
 
+K-Means clustering with 4 clusters can be achieved as follows:
+
 ```python
 >>> from sklearn.cluster import KMeans
 >>> km = KMeans(4)
 >>> km.fit(X_train_tfidf)
 ```
+
+The assignments of the original posts to cluster id is given by `km.labels_` once `km.fit(..)` has been called. The centroids of the clusters is given by `km.cluster_centers_`. Intuitively, the vector that describes the centre of a cluster is just like any other featurevector, can every element can be interpreted as the number of times a specific term occurs (or the tf-idf weight of a specific term) in a hypothetical document. An interesting way to explore what each cluster is representing is to calculate and print the top weighted (either by occurrence or tf-idf) terms for that cluster:
 
 ```python
 >>> order_centroids = km.cluster_centers_.argsort()[:, ::-1]
@@ -219,14 +223,19 @@ Cluster 2:  god  jesus  people  bible  believe  christian  christians  think  sa
 Cluster 3:  pitt  geb  banks  gordon  cs  cadre  dsl  shameful  n3jxp  surrender
 ```
 
+Notice how when we performed the clustering that we chose to use 4 clusters. This was intentional, as we know that our data comes from 4 different newsgroups. We might hope that the clustering is able to separate out the 4 different newsgroups automatically, although this is in no-way guaranteed as the clustering is purely unsupervised. A number of different *metrics* exist that allow us to measure how well the clusters fit the known distribution of underlying newsgroups. One such metric is the *homogeneity* which is a measure of how pure the clusters are with respect to the known groupings:
+
 ```python
 from sklearn import metrics
 print "Homogeneity: %0.3f" % metrics.homogeneity_score(twenty_train.target, km.labels_)
+Homogeneity: 0.369
 ```
+
+Homogeneity scores vary between 0 and 1; a score of 1 indicates that the clusters match the original label distribution exactly.
 
 ---------------------------------------
 
-> **Exercise:** Can you print out which cluster each document belongs to? Hint: use `km.predict(X_train_tfidf)` to get the cluster assignment of each document index, and `twenty_train.filenames` to get the filenames of the corresponding documents.
+> **Exercise:** Can you print out which cluster each document belongs to? Hint: use `km.labels_` to get the cluster assignment of each document index, and `twenty_train.filenames` to get the filenames of the corresponding documents.
 
 ---------------------------------------
 
@@ -237,16 +246,161 @@ print "Homogeneity: %0.3f" % metrics.homogeneity_score(twenty_train.target, km.l
 ---------------------------------------
 
 
-## Building a predictive model
+## Building a predictive model using K-Nearest-Neighbours
 
-## K-Nearest neighbour classification
+Now that we have our training features and the known newsgroup label for each post, we can train a classifier to try to predict the category of a post. Let's start with a KNN classifier, which provides a simple baseline, although is perhaps not the best classifier for this task:
+
+```python
+>>> from sklearn.neighbors import KNeighborsClassifier
+>>> clf = KNeighborsClassifier(n_neighbors=3).fit(X_train_tfidf, twenty_train.target)
+```
+
+To try to predict the outcome on a new document we need to extract the features using almost the same feature extracting chain as before. The difference is that we call `transform` instead of `fit_transform` on the transformers/vectorizers, since they have already been fit to the training set:
+
+```python
+>>> docs_new = ['God is love', 'OpenGL on the GPU is fast']
+>>> X_new_tfidf = tfidf_vect.transform(docs_new)
+
+>>> predicted = clf.predict(X_new_tfidf)
+
+>>> for doc, category in zip(docs_new, predicted):
+...     print('%r => %s' % (doc, twenty_train.target_names[category]))
+...
+'God is love' => soc.religion.christian
+'OpenGL on the GPU is fast' => comp.graphics
+```
+
+## Building a pipeline
+
+In order to make the vectorizer =\> [transformer] =\> classifier easier to work with, `scikit-learn` provides a `Pipeline` class that behaves like a compound classifier:
+
+```python
+>>> from sklearn.pipeline import Pipeline
+>>> text_clf = Pipeline([('tfidf', TfidfVectorizer()),
+...                      ('clf', KNeighborsClassifier(n_neighbors=3))
+... ])
+```
+
+The names `tfidf` and `clf` (classifier) are arbitrary. We shall see their use in the section on grid search, below. We can now train the model with a single command:
+
+```python
+>>> text_clf = text_clf.fit(twenty_train.data, twenty_train.target)
+```
+
+## Evaluation of the performance on the test set
+
+Evaluating the predictive accuracy (average number of correct predictions divided by the number of total predictions) of the model is equally easy:
+
+```python
+>>> import numpy as np
+>>> twenty_test = load_files('/path/to/data/twenty_newsgroups/test', 
+... categories=categories, shuffle=True, random_state=42, encoding='latin1')
+>>> docs_test = twenty_test.data
+>>> predicted = text_clf.predict(docs_test)
+>>> np.mean(predicted == twenty_test.target)
+0.77230359520639147
+```
+
+I.e., we achieved 77.2% accuracy. Let's see if we can do better with a linear [support vector machine (SVM)](http://scikit-learn.org/stable/modules/svm.html#svm), which is widely regarded as one of the best text classification algorithms. We can change the learner by just plugging a different classifier object into our pipeline:
+
+```python
+>>> from sklearn.linear_model import SGDClassifier
+>>> text_clf = Pipeline([('tfidf', TfidfVectorizer()),
+...                      ('clf', SGDClassifier(loss='hinge', penalty='l2',
+...                                            alpha=1e-3, n_iter=5, random_state=42)),
+... ])
+>>> _ = text_clf.fit(twenty_train.data, twenty_train.target)
+>>> predicted = text_clf.predict(docs_test)
+>>> np.mean(predicted == twenty_test.target)
+0.99667110519307589
+```
+
+`scikit-learn` further provides utilities for more detailed performance analysis of the results:
+
+```python
+>>> from sklearn import metrics
+>>> print(metrics.classification_report(twenty_test.target, predicted,
+...     target_names=twenty_test.target_names))
+                        precision    recall  f1-score   support
+
+           alt.atheism       1.00      0.99      0.99       319
+         comp.graphics       1.00      1.00      1.00       389
+               sci.med       1.00      1.00      1.00       396
+soc.religion.christian       0.99      0.99      0.99       398
+
+           avg / total       1.00      1.00      1.00      1502
+
+>>> metrics.confusion_matrix(twenty_test.target, predicted)
+array([[316,   0,   0,   3],
+       [  0, 389,   0,   0],
+       [  0,   0, 396,   0],
+       [  1,   1,   0, 396]])
+```
+
+The confusion matrix shows that posts from the newsgroups on atheism and christian are more often confused for one another than with computer graphics.
+
+## Parameter tuning using grid search
+
+We've already encountered some parameters such as `use_idf` in the `TfidfTransformer` (and `TfidfVectorizer` if you followed the exercise and looked at the documentation). Classifiers tend to have many parameters as well; e.g., `KNeighborsClassifier` includes parameter for the number of neighbours and `SGDClassifier` has a penalty parameter `alpha` and configurable loss and penalty terms in the objective function (see the module documentation, or use the Python `help` function, to get a description of these).
+
+Instead of tweaking the parameters of the various components of the chain, it is possible to run an exhaustive search of the best parameters on a grid of possible values. Let's use this to explore whether we can make the `KNeighborsClassifier` perform as well as our linear SVM. We'll try out classifiers on either words or bi-grams, with or without idf, and with a K (number of neighbours) ranging from 1 to 7 (odd numbers only):
+
+```python
+>>> text_clf = Pipeline([('tfidf', TfidfVectorizer()),
+...                      ('clf', KNeighborsClassifier(n_neighbors=3))
+... ])
+>>> from sklearn.grid_search import GridSearchCV
+>>> parameters = {'tfidf__ngram_range': [(1, 1), (1, 2)],
+...               'tfidf__use_idf': (True, False),
+...               'clf__n_neighbors': (1, 3, 5, 7)
+... }
+```
+
+Obviously, such an exhaustive search can be expensive. If we have multiple CPU cores at our disposal, we can tell the grid searcher to try these eight parameter combinations in parallel with the `n_jobs` parameter. If we give this parameter a value of `-1`, grid search will detect how many cores are installed and uses them all:
+
+```python
+>>> gs_clf = GridSearchCV(text_clf, parameters, n_jobs=-1)
+```
+
+The grid search instance behaves like a normal `scikit-learn` model. Let's perform the search on a smaller subset of the training data to speed up the computation:
+
+```python
+>>> gs_clf = gs_clf.fit(twenty_train.data[:400], twenty_train.target[:400])
+```
+
+The result of calling `fit` on a `GridSearchCV` object is a classifier that we can use to `predict`:
+
+```python
+>>> twenty_train.target_names[gs_clf.predict(['God is love'])]
+'soc.religion.christian'
+```
+
+but otherwise, it's a pretty large and clumsy object. We can, however, get the optimal parameters out by inspecting the object's `grid_scores_` attribute, which is a list of parameters/score pairs. To get the best scoring attributes, we can do:
+
+```python
+>>> best_parameters, score, _ = max(gs_clf.grid_scores_, key=lambda x: x[1])
+>>> for param_name in sorted(parameters.keys()):
+...     print("%s: %r" % (param_name, best_parameters[param_name]))
+...
+clf__n_neighbors: 1
+tfidf__ngram_range: (1, 1)
+tfidf__use_idf: True
+
+>>> score                                              
+0.78249999999999997
+```
 
 ## Extension exercises
 
-### Better features
+---------------------------------------
 
-### Other types of clustering
+> **Exercise:** Can you build a classifier for the entire 20 class dataset? What is the performance, and how does it compare to the 4 classes we have been experimenting with?
 
-### More advanced classifiers
+---------------------------------------
 
+---------------------------------------
+
+> **Exercise:** If you have enjoyed this tutorial, the exercises in the `scikit-learn` [Working with Text Data tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html#exercises)
+
+---------------------------------------
 
