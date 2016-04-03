@@ -400,7 +400,7 @@ tfidf__use_idf: True
 
 ---------------------------------------
 
-> **Exercise:** If you have enjoyed this tutorial, the exercises in the `scikit-learn` [Working with Text Data tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html#exercises)
+> **Exercise:** If you have enjoyed this tutorial, the exercises in the `scikit-learn` [Working with Text Data tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html#exercises) are a good next step.
 
 ---------------------------------------
 
