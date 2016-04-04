@@ -3,7 +3,9 @@
 # Machine Learning 101 - Tutorial
 
 ## Introduction and Acknowledgements
-This tutorial is largely based on the official ["Working With Text Data" scikit-learn tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html). A number of changes have been made to ensure that it fits the format required for the away-day session, and we've added additional bits that demonstrate how to cluster data with k-means. Through this tutorial you'll learn how to:
+This tutorial is largely based on the official ["Working With Text Data" scikit-learn tutorial](http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html). A number of changes have been made to ensure that it fits the format required for the away-day session, and we've added additional bits that demonstrate how to cluster data with k-means.
+
+Through this tutorial you'll learn how to:
 
 * Load the a dataset of newsgroup posts
 * Extract feature vectors suitable for machine learning
