@@ -9,12 +9,12 @@ Through this tutorial you'll learn how to:
 
 * Load the a dataset of newsgroup posts
 * Extract feature vectors suitable for machine learning
-* Use K-Means and hierarchical agglomerative clustering to automatically group data
+* Use K-Means clustering to automatically group the data
 * Train a classifier to that predicts what newsgroup a post belongs to
 * Use a grid search strategy to find a good configuration of both the feature extraction components and the classifier
 
 ## Prerequisites
-To use this tutorial you'll use the Python 2 language with the `scikit-learn` package to perform feature extraction, clustering and classification tasks. 
+To use this tutorial you'll use the Python 2 language with the `scikit-learn` package to perform feature extraction, clustering and classification tasks. `scikit-learn` is an open-source package containing a number of simple and efficient tools for data mining and data analysis in the Python language.
 
 You'll need access to a computer with the following installed:
 
