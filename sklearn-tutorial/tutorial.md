@@ -217,17 +217,18 @@ The assignments of the original posts to cluster id is given by `km.labels_` onc
 ...         print ' %s' % terms[ind],
 ...     print
 ...
-Cluster 0:  com  graphics  university  posting  host  nntp  msg  article  thanks  know
-Cluster 1:  keith  caltech  livesey  sgi  wpd  solntze  schneider  jon  cco  morality
-Cluster 2:  god  jesus  people  bible  believe  christian  christians  think  say  don
-Cluster 3:  pitt  geb  banks  gordon  cs  cadre  dsl  shameful  n3jxp  surrender
+Cluster 0:  com graphics university posting host nntp msg article thanks know
+Cluster 1:  keith caltech livesey sgi wpd solntze schneider jon cco morality
+Cluster 2:  god jesus people bible believe christian christians think say don
+Cluster 3:  pitt geb banks gordon cs cadre dsl shameful n3jxp surrender
 ```
 
 Notice how when we performed the clustering that we chose to use 4 clusters. This was intentional, as we know that our data comes from 4 different newsgroups. We might hope that the clustering is able to separate out the 4 different newsgroups automatically, although this is in no-way guaranteed as the clustering is purely unsupervised. A number of different *metrics* exist that allow us to measure how well the clusters fit the known distribution of underlying newsgroups. One such metric is the *homogeneity* which is a measure of how pure the clusters are with respect to the known groupings:
 
 ```python
-from sklearn import metrics
-print "Homogeneity: %0.3f" % metrics.homogeneity_score(twenty_train.target, km.labels_)
+>>> from sklearn import metrics
+>>> print "Homogeneity: %0.3f" % metrics.homogeneity_score(
+... twenty_train.target, km.labels_)
 Homogeneity: 0.369
 ```
 
@@ -252,7 +253,8 @@ Now that we have our training features and the known newsgroup label for each po
 
 ```python
 >>> from sklearn.neighbors import KNeighborsClassifier
->>> clf = KNeighborsClassifier(n_neighbors=3).fit(X_train_tfidf, twenty_train.target)
+>>> clf = KNeighborsClassifier(n_neighbors=3).fit(X_train_tfidf, 
+... twenty_train.target)
 ```
 
 To try to predict the outcome on a new document we need to extract the features using almost the same feature extracting chain as before. The difference is that we call `transform` instead of `fit_transform` on the transformers/vectorizers, since they have already been fit to the training set:
@@ -307,7 +309,8 @@ I.e., we achieved 77.2% accuracy. Let's see if we can do better with a linear [s
 >>> from sklearn.linear_model import SGDClassifier
 >>> text_clf = Pipeline([('tfidf', TfidfVectorizer()),
 ...                      ('clf', SGDClassifier(loss='hinge', penalty='l2',
-...                                            alpha=1e-3, n_iter=5, random_state=42)),
+...                                            alpha=1e-3, n_iter=5, 
+...                                            random_state=42)),
 ... ])
 >>> _ = text_clf.fit(twenty_train.data, twenty_train.target)
 >>> predicted = text_clf.predict(docs_test)
