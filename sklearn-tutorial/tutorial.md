@@ -111,11 +111,7 @@ You can notice that the samples have been shuffled randomly (with a fixed random
 
 ## Building a Basic "Bag of Words" Feature Extractor
 
-In order to perform machine learning on text documents, we first need to turn the text content into numerical featurevectors.
-
-### Bags of words
-
-The most intuitive way to do so is the "bags of words" representation:
+In order to perform machine learning on text documents, we first need to turn the text content into numerical featurevectors. The most intuitive way to do so is the "bags of words" representation:
 
 1. Assign a fixed integer id to each word occurring in any document of the training set (for instance by building a dictionary from words to integer indices).
 2. For each document `#i`, count the number of occurrences of each word `w` and store it in `X[i, j]` as the value of feature `#j` where `j` is the index of word `w` in the dictionary
