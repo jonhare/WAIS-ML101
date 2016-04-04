@@ -147,8 +147,6 @@ Text preprocessing, tokenizing and filtering of stop-words are included in a hig
 4690
 ```
 
-The index value of a word in the vocabulary is linked to its frequency in the whole training corpus.
-
 ### From occurrences to frequencies
 
 Occurrence count is a good start but there is an issue: longer documents will have higher average count values than shorter documents, even though they might talk about the same topics. To avoid these potential discrepancies, it suffices to divide the number of occurrences of each word in a document by the total number of words in the document. The number of times a term occurs in a document, divided by the number of terms in a document is called the **term frequency** (*tf*).
