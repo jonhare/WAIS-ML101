@@ -12,7 +12,9 @@ This tutorial is largely based on the official ["Working With Text Data" scikit-
 * Use a grid search strategy to find a good configuration of both the feature extraction components and the classifier
 
 ## Prerequisites
-To use this tutorial you'll use the Python 2 language with the `scikit-learn` package to perform feature extraction, clustering and classification tasks. You'll need access to a computer with the following installed:
+To use this tutorial you'll use the Python 2 language with the `scikit-learn` package to perform feature extraction, clustering and classification tasks. 
+
+You'll need access to a computer with the following installed:
 
 - `Python` (> 2.6)
 - `NumPy` (>= 1.6.1)
